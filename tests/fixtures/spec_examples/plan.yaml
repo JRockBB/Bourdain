@@ -1,0 +1,11 @@
+week: 2026-W43
+lean: 0.2
+cook_events:
+  - {recipe: my-book/chana-masala, day: mon, slot: dinner, batches: 1}
+meals:
+  - {day: mon, slot: dinner, recipe: my-book/chana-masala, leftover: false}
+  - {day: tue, slot: lunch, recipe: my-book/chana-masala, leftover: true}
+locks:
+  - {day: fri, slot: dinner, value: out}
+daily_macros: {mon: {kcal: 2340, protein_g: 152}}
+objective_breakdown: {cost: 61.20, waste_g_perishable: 140, variety_penalty: 3, macro_slack: 0}

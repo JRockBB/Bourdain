@@ -1,0 +1,10 @@
+[
+  {
+    "title": "Carrot Soup",
+    "servings": 2,
+    "ingredients": [{"raw": "200 g carrots", "qty": 200, "unit": "g", "item": "carrots", "source": "llm", "confidence": 0.99}],
+    "source": {"kind": "cookbook", "page": 12},
+    "confidence": {"title": 0.99, "servings": 0.99, "ingredients.0": 0.99},
+    "page_refs": ["@0"]
+  }
+]

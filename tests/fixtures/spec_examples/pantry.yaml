@@ -1,0 +1,7 @@
+items:
+  - ingredient_id: rice-jasmine
+    status: have
+  - ingredient_id: cilantro
+    qty_g: 60
+    acquired: 2026-10-18
+    expires: 2026-10-25

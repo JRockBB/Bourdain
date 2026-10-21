@@ -1,0 +1,43 @@
+# Source page retained so the cookbook is still the cooking interface.
+id: my-book/skillet-lemon-chicken
+title: Skillet Lemon Chicken Thighs
+source:
+  kind: cookbook
+  book: my-book
+  page: 123
+  url: null
+  images: [raw/2026-10-21/IMG_0412.jpg]
+servings: 4
+time: {active_min: 20, total_min: 45}
+tags: [dinner, chicken, weeknight, one-pan]
+protein: chicken
+cuisine: mediterranean
+keeps_days: 3
+freezes: false
+ingredients:
+  - raw: "2 lb bone-in, skin-on chicken thighs"
+    qty: 2
+    unit: lb
+    item: chicken thighs, bone-in, skin-on
+    prep: null
+    optional: false
+    group: null
+    ingredient_id: chicken-thigh-bone-in
+    grams: 907 # Keep this hand-checked weight.
+    match_confidence: 0.96
+  - raw: "Salt and pepper to taste"
+    qty: null
+    unit: null
+    item: salt and pepper
+    ingredient_id: salt
+    grams: 0
+    match_confidence: 1.0
+steps: []
+nutrition:
+  per_serving: {kcal: 512, protein_g: 38.1, fat_g: 34.0, carb_g: 9.2, fiber_g: 1.1}
+  source: fdc
+  coverage: 0.98
+  computed_at: 2026-10-21T19:04:00
+review:
+  status: needs_review
+  flags: [low_match:shallot, missing_servings_guess]

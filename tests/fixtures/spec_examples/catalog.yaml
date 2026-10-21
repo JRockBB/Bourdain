@@ -1,0 +1,16 @@
+chicken-thigh-bone-in:
+  name: chicken thigh, bone-in, skin-on, raw
+  aliases: [chicken thighs, bone-in chicken thighs, skin-on thighs]
+  fdc_id: null # The spec placeholder is deliberately unresolved.
+  fdc_description: null
+  edible_fraction: 0.72
+  density_g_per_ml: null
+  unit_weights: {each: 170}
+  staple: false
+  perishable: true
+  shelf_life_days: 3
+  buy:
+    unit: lb
+    package_g: [454, 907]
+    section: meat
+    price_per_package: null

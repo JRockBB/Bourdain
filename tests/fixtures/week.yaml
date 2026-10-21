@@ -1,0 +1,52 @@
+targets:
+  eaters: [{name: me}, {name: partner}]
+catalog:
+  carrot:
+    name: Carrots
+    buy: {section: produce, package_g: [500]}
+  tomato:
+    name: Tomatoes
+    buy: {section: produce}
+  beans:
+    name: Beans
+    buy: {section: pantry, package_g: [400]}
+  pasta:
+    name: Pasta
+    buy: {section: pantry, package_g: [500]}
+  oil: {name: Olive oil, staple: true}
+  salt: {name: Salt, staple: true}
+  cheese: {name: Cheese, buy: {section: dairy}}
+pantry:
+  items:
+    - {ingredient_id: carrot, qty_g: 100}
+    - {ingredient_id: tomato, qty_g: 50}
+    - {ingredient_id: beans, qty_g: 150}
+    - {ingredient_id: oil, status: have}
+    - {ingredient_id: salt, status: low}
+recipes:
+  - id: test/soup
+    title: Bean soup
+    servings: 4
+    ingredients:
+      - {raw: 600 g carrots, item: carrots, ingredient_id: carrot, grams: 600}
+      - {raw: 800 g beans, item: beans, ingredient_id: beans, grams: 800}
+      - {raw: 20 g oil, item: oil, ingredient_id: oil, grams: 20}
+      - {raw: salt to taste, item: salt, ingredient_id: salt, grams: 0}
+  - id: test/tacos
+    title: Bean tacos
+    servings: 2
+    ingredients:
+      - {raw: 300 g beans, item: beans, ingredient_id: beans, grams: 300}
+      - {raw: 250 g tomatoes, item: tomatoes, ingredient_id: tomato, grams: 250}
+      - {raw: 10 g oil, item: oil, ingredient_id: oil, grams: 10}
+      - {raw: salt to taste, item: salt, ingredient_id: salt, grams: 0}
+  - id: test/pasta
+    title: Tomato pasta
+    servings: 1
+    ingredients:
+      - {raw: 100 g pasta, item: pasta, ingredient_id: pasta, grams: 100}
+      - {raw: 100 g tomatoes, item: tomatoes, ingredient_id: tomato, grams: 100}
+      - {raw: 5 g oil, item: oil, ingredient_id: oil, grams: 5}
+      - {raw: salt to taste, item: salt, ingredient_id: salt, grams: 0}
+      - {raw: 25 g cheese, item: cheese, ingredient_id: cheese, grams: 25, optional: true}
+assignments: [mon dinner=test/soup, tue dinner=test/tacos, wed dinner=test/pasta, fri dinner=out]

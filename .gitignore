@@ -1,0 +1,21 @@
+# Python and build artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+build/
+dist/
+
+# Local tooling caches
+.uv-cache/
+.pytest_cache/
+.ruff_cache/
+.hypothesis/
+.coverage
+htmlcov/
+demo-kitchen/
+
+# Local credentials
+.env
+.env.*
+!.env.example

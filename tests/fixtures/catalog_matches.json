@@ -1,0 +1,8 @@
+[
+  {"name": "scallions", "id": "green-onions", "fuzzy": false},
+  {"name": "GREEN ONIONS", "id": "green-onions", "fuzzy": false},
+  {"name": "green onion", "id": "green-onions", "fuzzy": true},
+  {"name": "EVOO", "id": "olive-oil", "fuzzy": false},
+  {"name": "virgin olive oil extra", "id": "olive-oil", "fuzzy": true},
+  {"name": "chiken thighs", "id": "chicken-thigh", "fuzzy": true}
+]

@@ -1,0 +1,7 @@
+[
+  {"title": "Soup", "pages": {"1": ["200 g carrots"], "2": ["100 g beans"]}},
+  {"title": "Salad", "pages": {"2": ["50 g lettuce"], "3": ["20 g tomatoes"]}},
+  {"title": "Rice", "pages": {"4": ["100 g rice"], "5": ["200 ml water"]}},
+  {"title": "Bread", "pages": {"6": ["300 g flour"]}},
+  {"title": "Stew", "pages": {"7": ["200 g potatoes"]}}
+]

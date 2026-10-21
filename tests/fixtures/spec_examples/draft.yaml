@@ -1,0 +1,7 @@
+title: Chana Masala
+servings: 4
+source: {kind: text}
+ingredients:
+  - {raw: "400 g chickpeas", qty: 400, unit: g, item: chickpeas}
+confidence: {title: 1, servings: 0.95}
+flags: []

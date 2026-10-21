@@ -1,0 +1,9 @@
+TYPE,CONTENT,DESCRIPTION,PRIORITY,INDENT
+section,Produce,,,
+task,Carrots — 1 × 500 g package (Bean soup),,4,1
+task,"Tomatoes — 400 g (Bean tacos, Tomato pasta)",,4,1
+section,Pantry,,,
+task,"Beans — 2 × 400 g package (Bean soup, Bean tacos)",,4,1
+task,Pasta — 1 × 500 g package (Tomato pasta),,4,1
+section,Also check,,,
+task,"Salt — check pantry (Bean soup, Bean tacos, Tomato pasta)",pantry low,4,1

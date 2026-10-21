@@ -1,0 +1,18 @@
+planned_slots: [lunch, dinner]
+days: [mon, tue, wed, thu, fri, sat, sun]
+eaters:
+  - name: me
+    servings_per_slot: 1.0
+    daily:
+      kcal: [2200, 2500]
+      protein_g: [150, null]
+      fat_g: [null, 95]
+      carb_g: [null, null]
+      fiber_g: [30, null]
+    fixed_daily:
+      kcal: 450
+      protein_g: 40
+  - name: partner
+    servings_per_slot: 0.8
+    daily: null
+macro_mode: daily

@@ -1,0 +1,120 @@
+- raw: "1 1/2 cups (200 g) all-purpose flour, sifted"
+  expected: {qty: 1.5, unit: cup, item: all-purpose flour, prep: sifted, grams: 200}
+- raw: "½ cup milk"
+  expected: {qty: 0.5, unit: cup, item: milk}
+- raw: "1½ cups flour"
+  expected: {qty: 1.5, unit: cup, item: flour}
+- raw: "¼ tsp salt"
+  expected: {qty: 0.25, unit: tsp, item: salt}
+- raw: "¾ teaspoon cumin"
+  expected: {qty: 0.75, unit: tsp, item: cumin}
+- raw: "⅓ cup sugar"
+  expected: {qty: 0.3333333333333333, unit: cup, item: sugar}
+- raw: "⅔ cup water"
+  expected: {qty: 0.6666666666666666, unit: cup, item: water}
+- raw: "⅛ tsp pepper"
+  expected: {qty: 0.125, unit: tsp, item: pepper}
+- raw: "⅜ cup oats"
+  expected: {qty: 0.375, unit: cup, item: oats}
+- raw: "⅝ cup rice"
+  expected: {qty: 0.625, unit: cup, item: rice}
+- raw: "⅞ cup stock"
+  expected: {qty: 0.875, unit: cup, item: stock}
+- raw: "2–3 cloves garlic, minced"
+  expected: {qty: null, qty_range: [2, 3], unit: clove, item: garlic, prep: minced, flags: [quantity_range]}
+- raw: "2-3 onions"
+  expected: {qty: null, qty_range: [2, 3], unit: each, item: onions}
+- raw: "1 to 2 tbsp oil"
+  expected: {qty: null, qty_range: [1, 2], unit: tbsp, item: oil}
+- raw: "1/2–3/4 cup milk"
+  expected: {qty: null, qty_range: [0.5, 0.75], unit: cup, item: milk}
+- raw: "Salt and pepper to taste"
+  expected: {qty: null, unit: null, item: Salt and pepper, grams: 0}
+- raw: "salt, to taste"
+  expected: {item: salt, grams: 0}
+- raw: "water as needed"
+  expected: {item: water, grams: 0}
+- raw: "rice for serving"
+  expected: {item: rice, grams: 0}
+- raw: "2 tbsp olive oil, divided"
+  expected: {qty: 2, unit: tbsp, item: olive oil, prep: divided}
+- raw: "2 cups flour, plus more for dusting"
+  expected: {qty: 2, unit: cup, item: flour, prep: plus more for dusting}
+- raw: "1 tbsp butter (optional)"
+  expected: {qty: 1, unit: tbsp, item: butter, optional: true}
+- raw: "100 g cheese, optional"
+  expected: {qty: 100, unit: g, item: cheese, optional: true}
+- raw: "2 lb bone-in, skin-on chicken thighs"
+  expected: {qty: 2, unit: lb, item: 'bone-in, skin-on chicken thighs'}
+- raw: "2 pounds chicken, trimmed"
+  expected: {qty: 2, unit: lb, item: chicken, prep: trimmed}
+- raw: "3 ounces cheddar, grated"
+  expected: {qty: 3, unit: oz, item: cheddar, prep: grated}
+- raw: "0.5 kg potatoes"
+  expected: {qty: 0.5, unit: kg, item: potatoes}
+- raw: "250 grams tomatoes"
+  expected: {qty: 250, unit: g, item: tomatoes}
+- raw: "1 kilogram flour"
+  expected: {qty: 1, unit: kg, item: flour}
+- raw: "250ml milk"
+  expected: {qty: 250, unit: ml, item: milk}
+- raw: "1 litre stock"
+  expected: {qty: 1, unit: l, item: stock}
+- raw: "500 millilitres water"
+  expected: {qty: 500, unit: ml, item: water}
+- raw: "2 tablespoons honey"
+  expected: {qty: 2, unit: tbsp, item: honey}
+- raw: "3 teaspoons sugar"
+  expected: {qty: 3, unit: tsp, item: sugar}
+- raw: "2 tbsp. oil"
+  expected: {qty: 2, unit: tbsp, item: oil}
+- raw: "1 TBS butter"
+  expected: {qty: 1, unit: tbsp, item: butter}
+- raw: "1 CUP rice"
+  expected: {qty: 1, unit: cup, item: rice}
+- raw: "2 fluid ounces juice"
+  expected: {qty: 2, unit: fl oz, item: juice}
+- raw: "1 pint cream"
+  expected: {qty: 1, unit: pint, item: cream}
+- raw: "2 quarts broth"
+  expected: {qty: 2, unit: quart, item: broth}
+- raw: "2 eggs"
+  expected: {qty: 2, unit: each, item: eggs}
+- raw: "1 medium onion, diced"
+  expected: {qty: 1, unit: medium, item: onion, prep: diced}
+- raw: "3 large carrots, peeled"
+  expected: {qty: 3, unit: large, item: carrots, prep: peeled}
+- raw: "4 small potatoes"
+  expected: {qty: 4, unit: small, item: potatoes}
+- raw: "1 bunch cilantro"
+  expected: {qty: 1, unit: bunch, item: cilantro}
+- raw: "2 cans beans"
+  expected: {qty: 2, unit: can, item: beans}
+- raw: "2 (400 g) cans chickpeas, drained"
+  expected: {qty: 2, unit: can, item: chickpeas, prep: drained, grams: 800}
+- raw: "1 package (500 g) pasta"
+  expected: {qty: 1, unit: package, item: pasta, grams: 500}
+- raw: "1 cup (0.2 kg) flour"
+  expected: {qty: 1, unit: cup, item: flour, grams: 200}
+- raw: "3 slices bread"
+  expected: {qty: 3, unit: slice, item: bread}
+- raw: "2 sprigs thyme"
+  expected: {qty: 2, unit: sprig, item: thyme}
+- raw: "1 pinch nutmeg"
+  expected: {qty: 1, unit: pinch, item: nutmeg}
+- raw: ".5 cup yogurt"
+  expected: {qty: 0.5, unit: cup, item: yogurt}
+- raw: "1/4 cup vinegar"
+  expected: {qty: 0.25, unit: cup, item: vinegar}
+- raw: "2 1/4 cups oats"
+  expected: {qty: 2.25, unit: cup, item: oats}
+- raw: "some parsley"
+  expected: {qty: null, unit: null, item: some parsley, flags: [missing_quantity]}
+- raw: "0 g salt"
+  expected: {qty: 0, unit: g, item: salt}
+- raw: "1/0 cup flour"
+  expected: {qty: null, unit: cup, item: flour, flags: [invalid_quantity]}
+- raw: "salt (to taste)"
+  expected: {qty: null, item: salt, grams: 0, prep: to taste}
+- raw: "Parmesan (for serving, optional)"
+  expected: {qty: null, item: Parmesan, grams: 0, optional: true}
