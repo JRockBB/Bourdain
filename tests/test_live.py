@@ -24,6 +24,13 @@ def test_five_live_fdc_foods(tmp_path: Path) -> None:
         Path(os.environ["BOURDAIN_LIVE_FDC"]).read_text(encoding="utf-8")
     )
     assert len(cases) == 5
+    assert all(
+        isinstance(case["fdc_id"], int)
+        and case["fdc_id"] > 0
+        and isinstance(case["description"], str)
+        and isinstance(case["protein_g"], (int, float))
+        for case in cases
+    ), "Replace food manifest placeholders before calling USDA"
     client = FDCClient(tmp_path)
     for case in cases:
         food = client.food(case["fdc_id"])
@@ -44,7 +51,16 @@ def test_real_cookbook_pages(tmp_path: Path) -> None:
         "two-recipes",
         "handwritten",
     }
-    extractor = CachedExtractor(AnthropicExtractor(LLMConfig().model), tmp_path)
+    for case in cases:
+        assert case["files"] and case["recipes"]
+        for file in case["files"]:
+            assert (manifest.parent / file).is_file(), f"Missing fixture: {file}"
+    extractor = CachedExtractor(
+        AnthropicExtractor(
+            os.environ.get("BOURDAIN_LIVE_VISION_MODEL", LLMConfig().model)
+        ),
+        tmp_path,
+    )
     for case in cases:
         pages = [
             page
@@ -89,7 +105,9 @@ ALIASES = [
 def test_twenty_live_ingredient_matches(tmp_path: Path) -> None:
     if not os.environ.get("ANTHROPIC_API_KEY"):
         pytest.skip("Needs ANTHROPIC_API_KEY; makes 20 catalog matching calls")
-    matcher = AnthropicMatcher(LLMConfig().text_model, tmp_path)
+    matcher = AnthropicMatcher(
+        os.environ.get("BOURDAIN_LIVE_TEXT_MODEL", LLMConfig().text_model), tmp_path
+    )
     for alias, name in ALIASES:
         options = {
             "expected": CatalogItem(name=name),

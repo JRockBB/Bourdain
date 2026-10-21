@@ -17,12 +17,18 @@ Anthropic/USDA accuracy, actual Cronometer CSV/paste compatibility, manual Todoi
 import and hosted CI remain external acceptance checks. Multiple package sizes
 from Phase 10 are also supported, along with EPUB import, freezer portions,
 library statistics and count-based shopping quantities with reviewed USDA portion
-weights. The remaining Phase 10
-features are later work.
+weights. Index-first cookbook capture, receipt price proposals and one-way
+Todoist push are implemented too; real images and account behavior still need
+external acceptance checks.
+
+The final readiness pass adds a read-only health check, checksummed backup/restore,
+and a complete live acceptance runbook with manifest-driven checks and a disposable
+80-candidate benchmark. These tools prepare validation; live checks remain pending.
 
 - [Project overview and planned CLI](docs/README.md)
 - [Architecture and data contracts](docs/ARCHITECTURE.md)
 - [Roadmap and acceptance criteria](docs/ROADMAP.md)
+- [Live validation runbook](docs/VALIDATION.md)
 - [Coding-agent instructions](docs/AGENTS.md)
 
 ## Development
@@ -37,6 +43,37 @@ uv run ruff check .
 uv run ruff format --check .
 uv build --no-build-isolation
 ```
+
+## Health checks and recovery
+
+```sh
+uv run bourdain --data ./demo-kitchen doctor
+uv run bourdain --data ./demo-kitchen doctor --json
+uv run bourdain --data ./demo-kitchen backup ./kitchen-backup.zip
+uv run bourdain restore ./kitchen-backup.zip ./restored-kitchen
+uv run bourdain --data ./restored-kitchen doctor
+```
+
+`doctor` reads without repairing files, recovering transactions or calling APIs.
+It checks schemas, references, archived sources, stale conversions/plans and local
+solver availability. It reports credential presence without values; absent API
+keys are optional. Exit status is 1 for integrity errors, 0 otherwise. Warnings
+can include historical plans whose inventory has since changed.
+
+Backups preserve original file bytes, comments, raw sources, receipts, pantry and
+history, and Todoist/Cronometer retry records. They include other ordinary user
+files, excluding `.cache`, `.git`, `__pycache__`, `.transaction.lock` and `.env*`.
+Environment variables are never serialized. The ZIP has a versioned manifest
+with SHA-256 checksums. Keep the archive outside the library; its parent must
+exist and its filename must be new. Pause other writers while making a snapshot.
+Pending transactions, links/junctions and detected concurrent changes stop backup.
+
+Restore checks every checksum and path before creating a **new** destination;
+it never merges into an existing folder. Its parent must already exist. Limits
+are 100,000 files and 20 GiB uncompressed. Caches can be repopulated when needed;
+empty directories and filesystem permissions/timestamps are not preserved.
+If a filesystem failure interrupts publication, inspect the partial destination
+and retry into another new folder. Run `doctor` on the restored copy before use.
 
 ## Try the local workflow
 
@@ -188,6 +225,32 @@ coverage, missing quantities/matches, freezer portions and eligibility for your
 current targets. Eligibility means the input filters pass, not that all weekly
 constraints are feasible. It reads files without changing recipe data.
 
+## Select recipes from a cookbook index
+
+```sh
+uv run bourdain --data ./demo-kitchen ingest index ./index-photos --book my-book
+# Or select the physical PDF pages containing the index:
+uv run bourdain --data ./demo-kitchen ingest index ./cookbook.pdf --book my-book --pages 300-304
+uv run bourdain --data ./demo-kitchen index ls my-book
+uv run bourdain --data ./demo-kitchen index select my-book ENTRY_ID
+uv run bourdain --data ./demo-kitchen index queue my-book
+```
+
+Replace `ENTRY_ID` with the ID displayed by `index ls`. Extraction uses
+`ANTHROPIC_API_KEY`, caches successful structured responses, archives originals
+and flags uncertain titles/pages. Stubs live in `indexes/<book>.yaml`, separate
+from complete recipes, so they cannot enter planning. Correct an entry while
+selecting it with `--title "Corrected title" --pages 42-43`; `--remove` deselects.
+Confirmed entries survive repeat extraction. `index ls` and `queue` support JSON.
+
+The capture queue lists **printed recipe pages**, while ingest `--pages` selects
+**physical PDF pages**. No offset is assumed. Photograph the selected recipe
+pages and use the existing `ingest photos` or `ingest pdf` workflow. A same-title
+recipe in the same book with overlapping printed pages marks an entry captured.
+When the imported title differs, use `index link my-book ENTRY_ID RECIPE_ID`.
+Category headings/cross references are excluded by the extraction prompt; actual
+cookbook index layouts still require live accuracy checks.
+
 ## Nutrition and Cronometer
 
 With `FDC_API_KEY` set in the environment:
@@ -318,6 +381,62 @@ replanning before grocery export. If recipe quantities, yield or nutrition chang
 after freezing, that lot is excluded with a warning to avoid using new values for
 old food. Extra batches for freezing are explicitly recorded with `cooked`;
 the optimizer does not assume unrecorded future freezer stock.
+
+## Propose prices from a receipt
+
+```sh
+uv run bourdain --data ./demo-kitchen prices receipt ./receipt.jpg
+uv run bourdain --data ./demo-kitchen prices receipts
+uv run bourdain --data ./demo-kitchen prices review RECEIPT_ID
+uv run bourdain --data ./demo-kitchen prices accept RECEIPT_ID line-1
+```
+
+Receipt import uses the same image preparation and Anthropic boundary. Pass a
+single photo or a PDF of one receipt (at most ten selected pages). Proposals in
+`receipts/` retain raw item text, source references and suggested catalog matches;
+importing does not change prices or pantry stock. Review the source, then accept
+each usable line. For missing or misread fields, supply `--ingredient beans
+--package-g 500 --quantity 2 --line-total 6.00 --currency USD`. These values are an
+illustration: package grams describe **one package**, quantity is its package
+count, and line total is the final amount paid for that row. The stored package
+price is line total divided by quantity. An ambiguous `$` stays unresolved.
+
+Use `--resolve-discount` only after confirming the item's final discounted total;
+unassigned basket discounts require that review. Currency must match the configured
+price currency, and updating an existing package price requires `--replace`.
+`prices ignore RECEIPT_ID ROW` skips unsuitable rows. Reimporting the same source
+preserves decisions, and repeating acceptance cannot undo later manual price
+edits. Price and acceptance writes use the recovery journal. Returns, unweighed
+count/volume purchases and unclear package sizes need manual handling; weights
+are never inferred from a product name. Receipt accuracy remains unvalidated on
+real photos.
+
+## Push groceries to Todoist
+
+```sh
+uv run bourdain --data ./demo-kitchen push todoist --project PROJECT_ID --week 2026-W43 --dry-run
+# Set TODOIST_API_TOKEN in your environment, then send the reviewed snapshot:
+uv run bourdain --data ./demo-kitchen push todoist --project PROJECT_ID --week 2026-W43
+```
+
+`--dry-run` prints the task payloads without a token, network access or export
+state. Tasks preserve package/count labels, recipe context, notes and warnings,
+with the week and store section in each title. Provide the destination project
+ID explicitly. Credentials stay in the environment and are sent only in the
+authorization header.
+
+This is a **one-way snapshot push**. Command UUIDs are saved before sending under
+`exports/todoist/`; successful tasks are acknowledged individually. Retry the same
+command after a partial failure or interruption: pending commands retain their
+UUIDs for Todoist's deduplication, and confirmed successes are skipped. Requests
+contain at most 100 tasks. Keep the export state to preserve retry behavior.
+
+If the list changes after staging a batch, the command stops. Review the existing
+Todoist tasks before explicitly starting a separate export with `--batch second-trip`.
+It does not reconcile remote edits, completion or deletions, and it does not mark
+pantry purchases. Continue using `bought` for stock. Microsoft To Do remains a
+future adapter; real Todoist account acceptance is deferred. The transport follows
+the [Todoist API v1 Sync command contract](https://developer.todoist.com/api/v1/).
 
 ## Try automatic planning without keys
 

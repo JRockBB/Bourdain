@@ -14,6 +14,10 @@ dist/
 .coverage
 htmlcov/
 demo-kitchen/
+validation-kitchen/
+validation-restored/
+.validation-inputs/
+.validation-run/
 
 # Local credentials
 .env

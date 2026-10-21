@@ -17,8 +17,9 @@ from bourdain.config import Settings, load_settings
 from bourdain.errors import BourdainError
 from bourdain.grocery.aggregate import groceries
 from bourdain.grocery.export import export_list
-from bourdain.ingest.extractor import RecipeExtractor
+from bourdain.grocery.todoist import TodoistProvider
 from bourdain.ingest.documents import DocumentExtractor
+from bourdain.ingest.extractor import RecipeExtractor
 from bourdain.ingest.text import from_text
 from bourdain.ingest.url import from_url
 from bourdain.library import import_draft
@@ -71,6 +72,63 @@ def repository(ctx: typer.Context) -> Repository:
 def init_command(path: Path, force: bool = False) -> None:
     """Create a data folder; --force adds missing files without replacing edits."""
     typer.echo(f"Initialized {initialize(path, force=force)}")
+
+
+@app.command("doctor")
+@friendly_errors
+def doctor_command(
+    ctx: typer.Context, json_output: bool = typer.Option(False, "--json")
+) -> None:
+    """Check library integrity without changing files or calling APIs."""
+    from bourdain.config import data_path
+    from bourdain.doctor import diagnose
+
+    report = diagnose(data_path(ctx.obj))
+    if json_output:
+        import json
+
+        typer.echo(json.dumps(report.model_dump() | {"ok": report.ok}, indent=2))
+    else:
+        for item in report.findings:
+            typer.echo(
+                f"{item.severity.upper()} {item.path}: {item.message} [{item.code}]"
+            )
+        typer.echo(
+            f"Checked {report.checked_files} data files; "
+            f"HiGHS available: {report.solver_available}"
+        )
+        for key, present in report.credentials.items():
+            typer.echo(f"{key}: {'set' if present else 'not set (optional)'}")
+        typer.echo(
+            "No integrity errors found" if report.ok else "Integrity errors found"
+        )
+    if not report.ok:
+        raise typer.Exit(1)
+
+
+@app.command("backup")
+@friendly_errors
+def backup_command(ctx: typer.Context, archive: Path) -> None:
+    """Save a checksummed ZIP outside the library; never overwrite an archive."""
+    from bourdain.backup import create_backup
+    from bourdain.config import data_path
+
+    result = create_backup(data_path(ctx.obj), archive)
+    typer.echo(
+        f"Backed up {result.files} files ({result.bytes} bytes) to {result.path}"
+    )
+
+
+@app.command("restore")
+@friendly_errors
+def restore_command(archive: Path, destination: Path) -> None:
+    """Verify a backup and restore into a new folder; never merge existing data."""
+    from bourdain.backup import restore_backup
+
+    result = restore_backup(archive, destination)
+    typer.echo(
+        f"Restored {result.files} files to {result.path}; run doctor with --data there"
+    )
 
 
 ingest_app = typer.Typer(
@@ -274,6 +332,64 @@ def list_command(
         typer.echo(f"Wrote {output}")
     else:
         typer.echo(text, nl=False)
+
+
+push_app = typer.Typer(
+    help="Push a grocery snapshot to a checklist app.", no_args_is_help=True
+)
+app.add_typer(push_app, name="push")
+
+
+def make_todoist() -> TodoistProvider:
+    from bourdain.grocery.todoist import TodoistClient
+
+    return TodoistClient()
+
+
+@push_app.command("todoist")
+@friendly_errors
+def push_todoist(
+    ctx: typer.Context,
+    project: Annotated[str, typer.Option(help="Todoist project ID.")],
+    week: Annotated[str, typer.Option(help="Saved ISO week, e.g. 2026-W43.")],
+    batch: str = "weekly",
+    dry_run: bool = False,
+    include_optional: bool = False,
+) -> None:
+    """Push once per project/week/batch; --dry-run previews without writes."""
+    import json
+
+    from bourdain.freezer import read_freezer
+    from bourdain.grocery.todoist import push_groceries
+
+    settings = load_settings(ctx.obj)
+    repo = Repository(settings.paths.data)
+    items = groceries(
+        repo.plan(week).model,
+        repo.recipes(),
+        repo.catalog().model,
+        repo.pantry().model,
+        include_optional=include_optional,
+        freezer=read_freezer(repo),
+    )
+    for warning in items.warnings:
+        typer.echo(f"Warning: {warning}", err=True)
+    result = push_groceries(
+        repo,
+        items,
+        project,
+        make_todoist(),
+        batch=batch,
+        dry_run=dry_run,
+        section_order=settings.grocery.section_order,
+    )
+    if dry_run:
+        typer.echo(json.dumps(result.preview, indent=2))
+    else:
+        typer.echo(
+            f"Todoist: {result.sent} sent, {result.already_sent} already sent "
+            f"({result.total} total)"
+        )
 
 
 def make_extractor(settings: Settings) -> RecipeExtractor:

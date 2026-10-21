@@ -25,7 +25,7 @@ uv run bourdain --help
 
 1. **Never touch the user's data folder** (`~/kitchen` or `$BOURDAIN_DATA`) from tests or development. Tests use `tmp_path` and fixtures only.
 2. **No network in the default test suite.** LLM and FDC calls go through interfaces with fakes and recorded fixtures. Live tests are marked `@pytest.mark.live`.
-3. **No secrets in files.** API keys come only from `ANTHROPIC_API_KEY` and `FDC_API_KEY`. Never log them.
+3. **No secrets in files.** Credentials come only from `ANTHROPIC_API_KEY`, `FDC_API_KEY` and `TODOIST_API_TOKEN`. Never log them.
 4. **User edits win.** Automated writers must respect `locked: true` and `source: user` (use the helper from P1.3).
 5. **Preserve hand-edited YAML.** Use the store layer (ruamel round-trip) — never `yaml.dump` a user file directly.
 6. **Never guess quantities silently.** If grams, nutrients or matches are uncertain, write `null`/low confidence and add a review flag.

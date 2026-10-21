@@ -25,6 +25,7 @@ def isolated_environment(
     if request.node.get_closest_marker("live") is None:
         monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
         monkeypatch.delenv("FDC_API_KEY", raising=False)
+        monkeypatch.delenv("TODOIST_API_TOKEN", raising=False)
 
         def no_network(*args: Any, **kwargs: Any) -> Any:
             raise AssertionError("Network access is forbidden in offline tests")

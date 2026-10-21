@@ -1,0 +1,15 @@
+[
+  {
+    "ingredient": "onion",
+    "fdc_id": null,
+    "description": "REPLACE with independently verified USDA food description",
+    "portion_id": null,
+    "portion_label": "REPLACE with the exact displayed portion label",
+    "amount": null,
+    "gram_weight": null,
+    "edible_fraction": null,
+    "unit": "medium",
+    "count": null,
+    "expected_unit_g": null
+  }
+]

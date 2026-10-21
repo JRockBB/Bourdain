@@ -368,7 +368,7 @@ keys or SDK error payloads are written to cache or shown in errors.
 
 - `ingest.store_steps = false`: skip instructions entirely and keep the page reference — you cook from the book anyway. Fewer tokens, less to review.
 - `ingest.book` default per inbox subfolder, so book/page metadata isn't typed per recipe.
-- **Index-first mode** (later phase): photograph a book's index/table of contents to create recipe stubs, mark the ones you want, then photograph only those pages.
+- **Index-first mode**: photograph a book's index/table of contents, select recipe stubs, then photograph only the chosen printed pages (details below).
 
 **URLs**: `recipe-scrapers` (schema.org Recipe), falling back to the LLM on page text.
 
@@ -393,6 +393,33 @@ Limits: 100 MB archive, 200 MB expanded, 5000 ZIP entries, 5 MB per read member,
 text, XML entities and unsupported encodings fail explicitly. Font obfuscation
 does not block unencrypted text. Image-only pages and layouts without recognizable
 recipe structure need text/photo/PDF import. No LLM extraction is implied.
+
+**Index-first workflow (P10.1).** `book_index.py` stores `BookIndex` documents in
+`indexes/<book>.yaml`. Entries are separate `IndexStub`s, not incomplete Recipe
+objects: title, printed recipe pages, source index-image references, confidence,
+flags, selection and an optional explicit recipe link. Stable entry IDs hash
+normalized title plus page numbers; repeated mentions merge by that identity.
+Unknown pages/low confidence stay flagged. Index categories/cross references
+are excluded by the prompt; accuracy of that distinction awaits real indexes.
+`ingest index` reuses image preparation and groups at most two pages per request.
+All extracted rows validate before the index document is changed. It never
+guesses ingredient data, printed-to-PDF offsets or recipe servings.
+
+`index select` explicitly confirms/corrects title and printed pages and protects
+the entry from reimports. `index ls` lists stubs; `index queue` lists selected,
+uncaptured entries and deduplicated printed pages to photograph. Entries count
+as captured when a same-title recipe has ingredients, belongs to the same book
+and overlaps the printed pages, or through an explicit same-book `index link`.
+Capture does not imply review/nutrition readiness. Ordinary photo/PDF ingestion
+remains the recipe import path. No index stub enters planning/statistics counts.
+
+`ingest/documents.py` provides a typed `DocumentExtractor` boundary and a cached
+Anthropic implementation shared by indexes and receipts. Prompt, response schema,
+model and image references/content hashes determine the cache key. Page references
+must belong to the actual inputs; unknown references and invalid responses are
+not cached. Corrupt caches fail explicitly instead of causing a paid retry.
+The existing recipe extractor shares only the bounded structured-image transport.
+Credentials come from the environment; images sent to the API omit EXIF metadata.
 
 ### 4.2 `normalize` — ingredient lines → catalog + grams
 
@@ -659,7 +686,7 @@ logged with `cooked`; the optimizer never invents unrecorded prepared portions.
 - `md` — GitHub/Obsidian-style `- [ ]` checklist (default).
 - `todoist-csv` — Todoist's CSV import format, one section per store section.
 - `text` — one item per line; pasting multiple lines into Apple Reminders creates one reminder per line.
-- Later: direct push to Todoist / Microsoft To Do APIs.
+- `push todoist` — one-way API snapshot push; Microsoft To Do remains a future adapter.
 
 Manual plans use `--add "mon dinner=book/recipe"` or `plan --manual`, which opens
 an editor with a YAML mapping from meal times to recipe IDs (or `out`). The
@@ -685,6 +712,28 @@ The Todoist exporter uses the documented TYPE/CONTENT/DESCRIPTION/PRIORITY/INDEN
 columns, lowercase `section`/`task` rows, priority 4, and indent 1. Format reference:
 https://www.todoist.com/help/articles/208821185-Project-templates . A manual import
 is still required before claiming that acceptance criterion is complete.
+
+**Direct Todoist push (P10.3).** `grocery/todoist.py` exposes an injectable
+`TodoistProvider`, `TodoistClient` and `push_groceries`. The CLI requires explicit
+project/week and supports `--dry-run`, `--batch` and `--include-optional` (subject
+to the usual plan constraints). Preview reads the saved plan and produces task
+payloads without credentials, writes or requests. Each task carries its week,
+store section, existing quantity/context label, notes and warnings.
+
+An immutable snapshot is stored under `exports/todoist/<identity-hash>.yaml`, keyed
+by project/week/batch. Persist command UUIDs and temporary IDs before sending;
+Todoist API v1 `/sync` accepts at most 100 `item_add` commands per request. A process
+lock guards staging, send and acknowledgment. Save individual successful commands
+before reporting partial failures; resume only pending commands using the same
+UUIDs. A lost local acknowledgment is safe to retry under Todoist's documented
+command-idempotency contract. Keep state files; removing them loses deduplication.
+Failures use sanitized messages and bounded retry/backoff. `TODOIST_API_TOKEN`
+is read only from the environment and sent only in an authorization header.
+
+Changed snapshots require a new explicit batch after reviewing existing tasks;
+this includes a changed-to-empty list. This adapter does not update/delete remote
+tasks, reconcile manual edits/completions, or record pantry purchases. Existing
+`bought` remains explicit. Real account/project acceptance is still deferred.
 
 ### 4.7 `pantry`
 
@@ -719,6 +768,84 @@ without candidate truncation or a solver call. It does not prove a feasible week
 Statistics do not mutate the library or create missing optional sidecars.
 
 ---
+
+### 4.9 Receipt price proposals (P10.2)
+
+`receipts.py` imports one receipt photo or up to ten selected PDF pages through
+`DocumentExtractor`. `receipts/<source-hash>.yaml` retains store/date (when known),
+input page references, warnings and numbered rows. Each row preserves observed
+raw text, description, per-package mass, package quantity, final line total,
+currency, confidence and discount uncertainty. Missing values stay null. Exact
+catalog names/aliases or unambiguous fuzzy candidates supply suggestions only.
+Repeated item rows remain separate. Reimporting identical archived input reuses
+the stored receipt, preserving review decisions without another API call.
+
+`prices receipt`, `receipts`, `review`, `accept` and `ignore` expose that workflow.
+Acceptance explicitly confirms/corrects the catalog identity and all price inputs.
+It requires positive package mass/quantity, a nonnegative line total and a currency
+matching configured prices. Unknown currency (including ambiguous `$`) is not
+assumed. Discount ambiguity requires explicit resolution; no inferred count/volume
+weights or automatic allocation of basket discounts. Existing package prices need
+`--replace`. Saved price equals line total / package quantity, with `source: user`,
+`locked: true` and optional `receipt_ref: <receipt-id>/<row-id>` on `PackagePrice`.
+Other package sizes are preserved. Manual `prices set` clears that provenance.
+
+Price and row acceptance commit together using the existing recovery journal.
+An identical acceptance retry is a no-op even after a newer manual price edit;
+conflicting retries error. Ignored rows cannot be accepted. Extraction, review
+and confirmation never update pantry stock. Raw source remains archived for
+inspection. Offline fixtures exercise mechanics, not real receipt OCR accuracy.
+
+### 4.10 Library health check (P11.1)
+
+`doctor.diagnose(root)` and `doctor [--json]` inventory ordinary files without
+following symlinks or junctions, validate core and optional schemas independently,
+and check recipe/plan/index/receipt identities, catalog/recipe/source links,
+receipt price provenance and Todoist acknowledgment IDs. Missing optional sidecars
+remain absent. Stale USDA conversions, freezer signatures and plans that cannot
+produce current groceries are warnings, including historical plans whose stock
+has since changed. Broken references, invalid files/configuration and an unavailable
+local HiGHS installation are errors. Review backlog remains the role of `stats`.
+
+Diagnostics never construct `Repository`, recover transactions, create a lock,
+solve a plan or contact a provider. A pending `.transaction.json` is reported as an
+error without modification. Credentials appear only as presence booleans; missing
+optional keys do not fail the check. Exit status is 0 without errors, 1 with
+findings at error severity (JSON includes `ok`). An unreadable file does not stop
+inspection of the others. This is a point-in-time inspection; pause writers for a
+consistent report. It does not certify nutrition/OCR accuracy or remote services.
+
+### 4.11 Backup and restore (P11.2)
+
+`backup.create_backup(root, archive)` / `backup ARCHIVE` take a streamed ZIP
+snapshot outside the data folder. `manifest.json` contains format
+`bourdain-backup`, version 1, UTC creation time and each relative file's byte count
+and SHA-256; payloads live under `data/`. All ordinary files are included except
+`.cache`, `.git`, `__pycache__`, `.transaction.lock` and `.env*` at any depth.
+Preserve comments, sources, receipt decisions, purchase/cooking IDs, freezer
+consumption, Cronometer export hashes and Todoist UUID/acknowledgment state exactly.
+Do not parse/reserialize data or read environment credentials into the archive.
+
+Require the initialized core files. Reject pending transaction journals, links,
+junctions, special files and nonportable/colliding names. Hold the transaction
+lock while streaming and recheck file contents plus inventory before an exclusive
+archive publish. Other writers must be paused; this detects ordinary concurrent
+changes but is not a filesystem snapshot against arbitrary concurrent mutation.
+The lock file may be created; no library documents are changed or recovered.
+
+`restore_backup(archive, destination)` / `restore ARCHIVE DESTINATION` validate
+version, exact entry membership, paths, regular-file types, sizes and hashes in a
+temporary sibling directory before exclusively creating the destination. Reject
+ZIP traversal, absolute/drive/backslash names, Windows reserved names, links,
+case/parent collisions, duplicates, encrypted entries and missing/extra payloads.
+Never overwrite an archive or an existing destination, even an empty directory.
+Both output parents must exist. Limits: 100,000 files, 20 GiB uncompressed,
+20 MiB manifest. Publication uses exclusive hard links like the YAML store.
+If disk failure interrupts publication, a partial new destination may remain;
+the command fails and a retry must choose a fresh destination. No repair or journal
+replay occurs during restore. Empty directories, metadata and caches are omitted;
+run `doctor` on the restored copy to assess semantic health separately from byte
+integrity. Checksums detect corruption, not a maliciously rewritten manifest.
 
 ## 5. Configuration — `bourdain.toml`
 
@@ -787,6 +914,22 @@ currency = "USD"
 - **Property tests** (`hypothesis`) for unit conversion and grocery aggregation (never lists negative amounts; total grams conserved).
 - An opt-in `pytest -m live` suite that hits real APIs, skipped by default.
 
+**Validation preparation (P11.3).** `docs/VALIDATION.md` maps every deferred
+external criterion to inputs, commands and evidence; `VALIDATION_REPORT.md` is
+an unfilled report template. `examples/validation/*.example.json` contain explicit
+placeholders. The opt-in harness adds typed index, receipt, portion and 30-food
+mapping manifests, rejects empty inputs and uses only pytest temporary folders.
+Vision/text model overrides are environment variables for this harness alone.
+No automatic Todoist delivery or Cronometer account access is part of these tests.
+Manual account steps remain in the runbook; skipped tests remain pending.
+
+`examples/benchmark_library.py` restores an explicit backup into a disposable
+directory, requires 80 eligible candidates and 14 meal times, and records lean
+0/0.5/1 planning elapsed time, status/gap, macro slack, settings and versions.
+It never saves plans or calls a provider. Timing includes planning input reads
+and excludes restore and grocery verification. Offline harness checks use fakes;
+they are not evidence of real-image accuracy or real-library performance.
+
 ---
 
 ## 7. Household setup and deferred external validation
@@ -799,7 +942,7 @@ the real data folder. Do not infer personal targets from synthetic fixtures.
 2. Household: how many eaters, and does only one have macro targets?
 3. Which slots are planned (dinner only? lunch + dinner?), and what is "fixed" (breakfast, shakes)?
 4. Daily vs weekly-average macro targets.
-5. Prices: maintain `prices.yaml` by hand at first, or try receipt-photo extraction (later phase)?
+5. Prices: maintain `prices.yaml` by hand or review receipt-photo price proposals?
 6. Primary grocery checklist app (decides which exporter to polish first).
 
 ## References
@@ -810,6 +953,7 @@ the real data folder. Do not infer personal targets from synthetic fixtures.
 - USDA FoodData Central API: https://fdc.nal.usda.gov/api-guide
 - USDA portion/edible-weight documentation: https://fdc.nal.usda.gov/Foundation_Foods_Documentation/
 - USDA API schema (FoodPortion): https://api.nal.usda.gov/fdc/v1/json-spec?api_key=DEMO_KEY
+- Todoist API v1 Sync commands and UUID idempotency: https://developer.todoist.com/api/v1/
 - EPUB package, container and reading order: https://www.w3.org/TR/epub-33/
 - PuLP: https://coin-or.github.io/pulp/ · HiGHS: https://highs.dev
 - recipe-scrapers: https://github.com/hhursev/recipe-scrapers

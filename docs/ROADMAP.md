@@ -248,9 +248,25 @@ Goal: a grocery list from a hand-picked week, before any photo or optimizer work
 
 ## Phase 10 — Later / nice to have
 
-- [ ] Index-first ingest: photograph a cookbook's index → recipe stubs → pick which pages to shoot.
-- [ ] Receipt photo → `prices.yaml` updates.
-- [ ] Direct push to Todoist / Microsoft To Do APIs.
+- [x] **P10.1 Index-first ingest.** Photograph an index/TOC, retain reviewable
+  recipe stubs, select/correct entries and generate a printed-page capture queue.
+  *Verified:* Offline tests cover source binding, cache reuse, unknown-page
+  blocking, protected corrections on reimport, ordinary recipe capture detection,
+  explicit links and CLI selection/queue JSON. Stubs stay outside planning.
+  Real index/category extraction accuracy remains deferred.
+- [x] **P10.2 Receipt photo price proposals.** Extract item rows and explicitly
+  confirm package size, quantity, final paid total, currency and catalog identity.
+  *Verified:* Offline tests cover repeated rows, no premature price/pantry writes,
+  incomplete/discounted/foreign-currency review, protected-price replacement,
+  retries preserving newer edits, CLI flow and recovery after an interrupted
+  price/receipt commit. Real receipt OCR accuracy remains deferred.
+- [x] **P10.3 Direct Todoist push.** Preview and push a saved grocery snapshot to
+  an explicit project using persisted UUIDs and individual success tracking.
+  *Verified:* Offline tests cover dry-run isolation, repeated pushes, changed and
+  empty snapshots, explicit new batches, partial failures, lost acknowledgments,
+  100-command chunking, sanitized retries, secret exclusion and CLI export.
+  This is a one-way snapshot; account acceptance and a Microsoft To Do adapter
+  remain deferred. Remote completion does not mutate pantry stock.
 - [x] **P10.4 Multiple package sizes per ingredient in the MILP.**
   Optimize all maintained size/price options, persist the exact purchase mix and
   carry it through grocery exports and `bought`. Keep legacy single-size plans
@@ -298,6 +314,32 @@ Goal: a grocery list from a hand-picked week, before any photo or optimizer work
   portion coverage and Cronometer serving-export compatibility remain deferred.
 
 ---
+
+## Phase 11 — Validation readiness
+
+- [x] **P11.1 Read-only library health check.** `doctor [--json]` checks schemas,
+  identities, source and cross-file references, stale portion/freezer/plan data,
+  configuration and local solver availability. Report pending transactions without
+  recovering them; report credential presence only. Continue past damaged files.
+  *Verified:* Seven offline cases cover missing/legacy libraries, multiple damaged
+  files, secret-safe configuration output, stale data, cross-file/source links,
+  unsafe paths, identity/retry errors and byte-stable pending-transaction inspection.
+- [x] **P11.2 Portable backup and separate-folder restore.** Preserve original
+  bytes, sources and retry/history records with checksums. Reject incomplete,
+  unsafe or changing snapshots; never overwrite an archive or existing destination.
+  *Verified:* Nineteen offline cases cover byte-preserving recovery, secret/cache
+  exclusion, purchase history and Todoist deduplication after restore, pending and
+  changing snapshots, output refusal, malformed archives, traversal, collisions,
+  links, duplicates and CLI usage. No actual user library was accessed.
+- [x] **P11.3 Live validation preparation.** Provide a complete acceptance runbook,
+  input manifests and report template for APIs, account workflows, recovery and the
+  80-recipe benchmark. Keep all live execution explicitly deferred.
+  *Verified:* Runbook/report templates and six manifest templates are provided.
+  Four additional opt-in API tests cover indexes, receipts, portions and mapping;
+  the backup-based benchmark requires 80 eligible recipes and 14 meal times.
+  Three offline harness cases verify unknown-value failure detection, input
+  preflight and disposable benchmark isolation with a fake solver. Live accuracy,
+  real account behavior, real-library timing and hosted CI remain pending.
 
 ## Estimated effort for the user (not the agents)
 

@@ -1,0 +1,20 @@
+[
+  {
+    "case": "two-page",
+    "files": ["recipe-page-1.jpg", "recipe-page-2.jpg"],
+    "recipes": [{"title": "REPLACE", "servings": null, "ingredients": ["REPLACE with exact raw ingredient line"]}]
+  },
+  {
+    "case": "two-recipes",
+    "files": ["two-recipes.jpg"],
+    "recipes": [
+      {"title": "REPLACE first title", "servings": null, "ingredients": ["REPLACE"]},
+      {"title": "REPLACE second title", "servings": null, "ingredients": ["REPLACE"]}
+    ]
+  },
+  {
+    "case": "handwritten",
+    "files": ["handwritten.jpg"],
+    "recipes": [{"title": "REPLACE", "servings": null, "ingredients": ["REPLACE"]}]
+  }
+]

@@ -1,0 +1,15 @@
+[
+  {
+    "files": ["receipt.jpg"],
+    "entries": [
+      {
+        "raw": "REPLACE with the exact printed product row",
+        "package_g": null,
+        "quantity": null,
+        "line_total": null,
+        "currency": null,
+        "discount_uncertain": true
+      }
+    ]
+  }
+]

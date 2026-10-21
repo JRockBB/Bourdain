@@ -109,9 +109,11 @@ def import_index(
     document = index_document(repo, book)
     for identifier, entry in incoming.items():
         if identifier in document.model.entries:
-            entry.index_refs = list(dict.fromkeys(
-                document.model.entries[identifier].index_refs + entry.index_refs
-            ))
+            entry.index_refs = list(
+                dict.fromkeys(
+                    document.model.entries[identifier].index_refs + entry.index_refs
+                )
+            )
     document.model.entries.update(incoming)
     document.model.warnings = list(dict.fromkeys(document.model.warnings + warnings))
     return document.save()

@@ -10,7 +10,8 @@ Implementation status: the core pipeline through Phase 9 is implemented,
 including imports/review, USDA nutrition, the Cronometer text/CSV bridge, pantry
 and purchase tracking, prices, optimized plans, the lean dial and mid-week replan.
 EPUB import, freezer inventory/planning, library statistics and confirmed
-count-based shopping quantities are also implemented.
+count-based shopping quantities are also implemented, along with reviewed USDA
+portions, index-first recipe capture, receipt price proposals and Todoist push.
 External accuracy/format checks remain pending; offline fixtures do not establish
 live service compatibility. See the [working CLI guide](../README.md)
 and [roadmap acceptance checks](ROADMAP.md) for the boundary between implemented
@@ -68,12 +69,16 @@ bourdain init ~/kitchen                      # create the data folder layout
 bourdain ingest photos ~/kitchen/inbox/      # photos → recipe YAML (batch)
 bourdain ingest url https://...              # web recipe
 bourdain review                              # walk through only the flagged items
+bourdain ingest index ./index-photos --book my-book
+bourdain index ls my-book                    # select entries, then index queue
+bourdain prices receipt receipt.jpg          # proposals only; review/accept next
 bourdain nutrition refresh                   # compute macros for all recipes
 bourdain catalog portions onion              # inspect the confirmed USDA food's measures
 bourdain catalog use-portion onion ID --unit medium --buy  # explicitly confirm one
 bourdain cronometer export <recipe>          # paste-ready block for Cronometer's importer
 bourdain cronometer import-nutrition f.csv --basis per-serving
 bourdain plan --lean 0.2                     # 0 = thrifty/use-pantry … 1 = variety
+bourdain push todoist --project ID --week 2026-W43 --dry-run
 bourdain plan --lock "fri dinner=out" --pin chana-masala
 bourdain list --format md > groceries.md     # or: todoist-csv, text
 bourdain bought groceries.md                 # checked items → pantry
@@ -115,6 +120,9 @@ Your data lives elsewhere (default `~/kitchen`), ideally in its own private git 
 ├── recipes/<book-slug>/<recipe-slug>.yaml
 ├── catalog/ingredients.yaml
 ├── catalog/fdc.yaml           # reviewed USDA mappings
+├── indexes/<book>.yaml        # selected index stubs and source page references
+├── receipts/<source-id>.yaml  # reviewable price proposals and acceptance records
+├── exports/todoist/           # snapshot commands and retry acknowledgments
 ├── nutrition/fdc/             # USDA snapshots for comparison with overrides
 ├── pantry.yaml
 ├── prices.yaml
@@ -132,6 +140,8 @@ Core implementation through Phase 9 is present. Live Anthropic/FDC checks, real
 Cronometer export/import verification, manual Todoist import and hosted CI are
 pending. Phase 10's multiple-package-size optimization, freezer portions,
 EPUB import, statistics and shopping count units are also implemented;
-its remaining features are future work. See [the root README](../README.md)
-for setup and an offline planning demo, and [ROADMAP.md](ROADMAP.md) for acceptance
-status.
+index-first capture, receipt price proposals and Todoist delivery are present too.
+Phase 11 adds read-only `doctor`, checksummed backups and separate-folder restore.
+See [the root README](../README.md) for setup and an offline planning demo,
+[VALIDATION.md](VALIDATION.md) for the live acceptance runbook and
+[ROADMAP.md](ROADMAP.md) for acceptance status.
